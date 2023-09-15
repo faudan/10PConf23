@@ -1,0 +1,7 @@
+{
+	"header-template": {
+		"scope": "c, cpp",
+		"body": "#ifndef ${TM_FILENAME/(.*)\\..+$/${1:/upcase}/}_H\n\n\n\n\n#define ${TM_FILENAME/(.*)\\..+$/${1:/upcase}/}_H\n#endif $LINE_COMMENT ${TM_FILENAME/(.*)\\..+$/${1:/upcase}/}_H",
+		"description": "Include guard for header files"
+	}
+}

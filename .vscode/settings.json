@@ -1,0 +1,10 @@
+{
+    "buildCommand": "./build.bat",
+    "programName": "win32_main",
+    "files.associations": {
+        "xiosbase": "c",
+        "stdio.h": "c",
+        "*.rh": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "Disabled",
+}
