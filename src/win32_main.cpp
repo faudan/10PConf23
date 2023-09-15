@@ -217,13 +217,11 @@ internal AppState* initializeState() {
   return state;
 }
 
-int WINAPI WinMain(
-    HINSTANCE instance,
+
+HWND windowSetup( HINSTANCE instance,
     HINSTANCE prevInstance,
     LPSTR commandLine,
     int showCode) {
-
-
   WNDCLASSA winClass = {0};
 
   int windowWidth = 1280;
@@ -234,7 +232,6 @@ int WINAPI WinMain(
   winClass.lpfnWndProc = win32MainWindowCallback;
   winClass.hInstance = instance;
   winClass.lpszClassName = "win-32-app-class";
-  // SetCursor(NULL);
 
   if (RegisterClassA(&winClass)) {
     HWND windowHandle = CreateWindowExA(
@@ -243,68 +240,78 @@ int WINAPI WinMain(
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, instance, 0);
 
     if (windowHandle) {
-      HDC deviceContext = GetDC(windowHandle);
-      // SetCursor(NULL);
-      running = 1;
-
-      POINT p = {0,0};
-      RECT r;
-      ClientToScreen(windowHandle, &p);
-      GetWindowRect(windowHandle, &r);
-
-      UserInput gameInputs[2] = {};
-      UserInput *newInput = &gameInputs[0];
-      UserInput *previousInput = &gameInputs[1];
-      AppState* state = initializeState();
-
-      RECT windowRect;
-      GetWindowRect(windowHandle, &windowRect);
-
-      while (running) {
-
-        Keyboard *keyboard = &newInput->keyboard;
-        Keyboard *previousKeyboard = &previousInput->keyboard;
-        MouseInput *mouseInput = &newInput->mouse;
-        MouseInput *previousMouseInput = &previousInput->mouse;
-
-        *keyboard = {};
-        *mouseInput = {};
-        mouseInput->x = previousMouseInput->x;
-        mouseInput->y = previousMouseInput->y;
-        mouseInput->leftClick.isPressed = previousMouseInput->leftClick.isPressed;
-
-        for (int buttonIndex = 0; buttonIndex < arrayCount(keyboard->buttons); ++buttonIndex) {
-          keyboard->buttons[buttonIndex].isPressed = previousKeyboard->buttons[buttonIndex].isPressed;
-        }
-
-        win32HandleMessage(keyboard, mouseInput);
-
-        OffScreenBuffer gameGraphicsBuffer = {
-            globalBackbuffer.memory,
-            globalBackbuffer.width,
-            globalBackbuffer.height,
-            globalBackbuffer.pitch,
-        };
-
-        updateAndRender(&gameGraphicsBuffer, newInput, state);
-
-        Win32WindowDimension windowDimension = getWindowDimension(windowHandle);
-        win32DisplayBufferInWindow(deviceContext, &globalBackbuffer, windowDimension.width, windowDimension.height);
-        ReleaseDC(windowHandle, deviceContext);
-
-
-        UserInput *temp = newInput;
-        newInput = previousInput;
-        previousInput = temp;
-      }
-
-      free(state);
+      return windowHandle;
     } else {
       OutputDebugStringA("failed CreateWindowEx");
     }
 
   } else {
     OutputDebugStringA("failed RegisterClass");
+  }
+  
+  return 0;
+}
+
+void processInput(UserInput* currentInput, UserInput* previousInput) {
+      Keyboard *keyboard = &(currentInput->keyboard);
+      Keyboard *previousKeyboard = &(previousInput->keyboard);
+      MouseInput *mouseInput = &(currentInput->mouse);
+      MouseInput *previousMouseInput = &(previousInput->mouse);
+
+      *keyboard = {};
+      *mouseInput = {};
+      mouseInput->x = previousMouseInput->x;
+      mouseInput->y = previousMouseInput->y;
+      mouseInput->leftClick.isPressed = previousMouseInput->leftClick.isPressed;
+
+      for (int buttonIndex = 0; buttonIndex < arrayCount(keyboard->buttons); ++buttonIndex) {
+        keyboard->buttons[buttonIndex].isPressed = previousKeyboard->buttons[buttonIndex].isPressed;
+      }
+
+      win32HandleMessage(keyboard, mouseInput);
+}
+
+int WINAPI WinMain(
+    HINSTANCE instance,
+    HINSTANCE prevInstance,
+    LPSTR commandLine,
+    int showCode) {    
+  HWND windowHandle = windowSetup(instance, prevInstance, commandLine, showCode);
+  if (windowHandle) {
+    HDC deviceContext = GetDC(windowHandle);
+    running = 1;
+    SetCursor(NULL); 
+
+    // Setup
+    UserInput inputs[2] = {};
+    UserInput *currentInput = &inputs[0];
+    UserInput *previousInput = &inputs[1];
+    AppState* state = initializeState();
+
+    while (running) {
+      OffScreenBuffer bitmapBuffer = {
+          globalBackbuffer.memory,
+          globalBackbuffer.width,
+          globalBackbuffer.height,
+          globalBackbuffer.pitch,
+      };
+
+      processInput(currentInput, previousInput);
+      updateState(currentInput, state);
+      renderFrame(&bitmapBuffer, state, currentInput);
+      
+      // Display frame
+      Win32WindowDimension windowDimension = getWindowDimension(windowHandle);
+      win32DisplayBufferInWindow(deviceContext, &globalBackbuffer, windowDimension.width, windowDimension.height);
+      
+      // Clean-up
+      ReleaseDC(windowHandle, deviceContext);
+      UserInput *temp = currentInput;
+      currentInput = previousInput;
+      previousInput = temp;
+    }
+
+    free(state);
   }
 
   return 0;

@@ -184,9 +184,3 @@ void renderFrame(OffScreenBuffer* bitmapBuffer,AppState* state, UserInput *input
     renderRect(bitmapBuffer, state->pos, {10,10}, 0x00FF00);
     renderMouse(bitmapBuffer, input);
 }
-
-
-void updateAndRender(OffScreenBuffer* bitmapBuffer, UserInput *input, AppState* state) {
-    updateState(input, state);
-    renderFrame(bitmapBuffer, state, input);
-}
