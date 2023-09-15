@@ -9,7 +9,6 @@
 #include "10pconf.cpp"
 #include "10pconf.h"
 #include "stdio.h"
-#include "utils.h"
 
 #define arrayCount(array) (sizeof(array) / sizeof((array)[0]))
 
@@ -21,13 +20,6 @@ uint32 KM_UP = 'W';
 uint32 KM_DOWN = 'S';
 uint32 KM_LEFT = 'A';
 uint32 KM_RIGHT = 'D';
-
-inline uint32 safeTruncateUInt64(uint64 value) {
-  Assert(value <= 0xFFFFFFFF);
-  return (uint32)value;
-}
-
-
 
 internal Win32WindowDimension
 getWindowDimension(HWND windowHandle) {
@@ -114,7 +106,6 @@ LRESULT CALLBACK win32MainWindowCallback(
     case WM_KEYDOWN:
     case WM_KEYUP:
     case WM_SYSKEYUP: {
-      Assert(0);
     } break;
 
     default: {

@@ -16,13 +16,7 @@ typedef int16_t int16;
 typedef int32_t int32;
 typedef int64_t int64;
 
-typedef float real32;
-typedef double real64;
-
 typedef int32 bool32;
-
-#define PI32 3.14159265359f
-
 
 #define DEFINITIONS_H
 

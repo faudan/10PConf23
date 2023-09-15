@@ -1,6 +1,4 @@
 #include "definitions.h"
-#include "utils.h"
-
 #include "10pconf.h"
 #include <math.h>
 
